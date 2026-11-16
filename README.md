@@ -3,6 +3,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Орбита — аркада</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Rubik:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#eef2fb;--ink:#0b1020;--mute:#5b6580;--panel:#ffffff;
@@ -159,6 +161,20 @@ function update(dt){
   shake*=.9;
 }
 const banner=t=>pops.push({t,x:null,y:null,l:2.6});
+function planet(q,pu,low){
+  const r=q.r*pu,x=q.x,y=q.y,k=q.n%4,PI=Math.PI;
+  if(k===3){ctx.strokeStyle='rgba(255,210,140,.7)';ctx.lineWidth=r*.22;ctx.beginPath();ctx.ellipse(x,y,r*1.9,r*.55,-.3,PI,2*PI);ctx.stroke()}
+  ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,6.3);ctx.clip();
+  ctx.fillStyle=k===2?'#1f64d0':C[q.col];ctx.fillRect(x-r,y-r,r*2,r*2);
+  if(k===0||k===3){for(let i=-3;i<=3;i++){ctx.fillStyle=i%2?'rgba(255,255,255,.2)':'rgba(0,0,0,.16)';ctx.fillRect(x-r,y+i*r*.3-r*.07,r*2,r*.14)}}
+  else if(k===1){[[-.4,-.1,.28],[.3,.25,.2],[.1,-.5,.16],[-.15,.5,.18],[.55,-.15,.12]].forEach(c=>{ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.arc(x+c[0]*r,y+c[1]*r,c[2]*r,0,6.3);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.28)';ctx.lineWidth=1;ctx.stroke()})}
+  else{ctx.fillStyle='#4bbf62';[[-.3,-.2,.45,.3],[.35,.3,.35,.25],[0,.6,.3,.15]].forEach(c=>{ctx.beginPath();ctx.ellipse(x+c[0]*r,y+c[1]*r,c[2]*r,c[3]*r,.5,0,6.3);ctx.fill()});ctx.fillStyle='rgba(255,255,255,.4)';ctx.fillRect(x-r,y-r,r*2,r*.2)}
+  if(low){ctx.fillStyle='rgba(229,50,31,.5)';ctx.fillRect(x-r,y-r,r*2,r*2)}
+  const g=ctx.createRadialGradient(x-r*.4,y-r*.4,r*.1,x,y,r*1.05);g.addColorStop(0,'rgba(255,255,255,.3)');g.addColorStop(.55,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,20,.6)');
+  ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);ctx.restore();
+  if(k===3){ctx.strokeStyle='rgba(255,210,140,.95)';ctx.lineWidth=r*.22;ctx.beginPath();ctx.ellipse(x,y,r*1.9,r*.55,-.3,0,PI);ctx.stroke()}
+  if(q.amp){ctx.fillStyle=C.mute;for(const s of[-1,1]){ctx.beginPath();ctx.moveTo(x+s*(q.R-10),y);ctx.lineTo(x+s*(q.R-18),y-4);ctx.lineTo(x+s*(q.R-18),y+4);ctx.fill()}}
+}
 function draw(){
   ctx.setTransform(sc,0,0,sc,0,0);ctx.fillStyle=C.bg;ctx.fillRect(0,0,W,H);ctx.fillStyle=C.dot;
   for(const b of bg){const y=((b.y-camY*.25)%1200+1200)%1200;if(y<H){ctx.beginPath();ctx.arc(b.x,y,b.r,0,6.3);ctx.fill()}}
@@ -173,10 +189,7 @@ function draw(){
       ctx.lineWidth=4;ctx.lineCap='round';ctx.strokeStyle=pl.freeze>0?C.p3:low?C.warn:C[q.col];
       ctx.beginPath();ctx.arc(q.x,q.y,q.R+8,-Math.PI/2,-Math.PI/2+6.2832*Math.max(0,q.timer/q.max));ctx.stroke();
     }
-    const pu=low?1+Math.sin(performance.now()/60)*.08:1;
-    ctx.fillStyle=low?C.warn:C[q.col];ctx.beginPath();ctx.arc(q.x,q.y,q.r*pu,0,6.3);ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.22)';ctx.beginPath();ctx.arc(q.x-q.r*.3,q.y-q.r*.3,q.r*.4,0,6.3);ctx.fill();
-    if(q.amp){ctx.strokeStyle=C.bg;ctx.lineWidth=2;ctx.beginPath();ctx.arc(q.x,q.y,q.r*.55,0,6.3);ctx.stroke()}
+    planet(q,low?1+Math.sin(performance.now()/60)*.08:1,low);
   }
   for(const h of haz){
     if(h.y<camY-40||h.y>camY+H+40)continue;
@@ -267,4 +280,3 @@ resize();menu();requestAnimationFrame(loop);
 </script>
 </body>
 </html>
-
